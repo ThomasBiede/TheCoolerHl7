@@ -22,7 +22,8 @@ func (m *mainParser) ParseFile() {
 		switch subStr {
 		case "MSH":
 			delimiter = utils.NewEncodingChars(v[4:8])
-			ParseMSH(v, delimiter)
+			msh := ParseMSH(v, delimiter)
+			fmt.Println(msh)
 		}
 	}
 }
