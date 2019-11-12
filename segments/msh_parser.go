@@ -1,8 +1,9 @@
-package parser
+package segments
 
 import (
 	"hl7/utils"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -20,7 +21,7 @@ type MSH struct {
 	MessageControlID                    string
 	ProcessingID                        string
 	VersionID                           string
-	SequenceNumber                      string
+	SequenceNumber                      int64
 	ContinuationPointer                 string
 	AcceptAcknowledgmentType            string
 	ApplicationAcknowledgmentType       string
@@ -32,15 +33,9 @@ type MSH struct {
 }
 
 func ParseMSH(line string, encodingChars *utils.EncodingChars) *MSH {
-	// r, _ := regexp.Compile(`([^\|])`)
-	// tokens := r.FindAllString(line, -1)
-	// s, err := strconv.ParseInt(tokens[12], 10, 64)
-	// if err != nil {
-	// 	s = 0
-	// }
 	msh := MSH{}
-	tokens := strings.Split(line, "|")
 
+	tokens := strings.Split(line, "|")
 	for i := range tokens {
 		tokens[i] = strings.TrimSuffix(tokens[i], "|")
 	}
@@ -54,6 +49,10 @@ func ParseMSH(line string, encodingChars *utils.EncodingChars) *MSH {
 		case reflect.String:
 			f.SetString(tokens[i])
 
+		case reflect.Int64:
+			v, _ := strconv.ParseInt(tokens[i], 10, 64)
+			f.SetInt(v)
+
 		case reflect.TypeOf(new(time.Time)).Kind():
 			formatStr := "20060102150405"
 			t, _ := time.Parse(formatStr, tokens[i])
@@ -63,11 +62,15 @@ func ParseMSH(line string, encodingChars *utils.EncodingChars) *MSH {
 
 		case reflect.TypeOf(new([]string)).Kind():
 			d := encodingChars.GetDelimiters()[1]
-			subTokens := strings.Split(tokens[i], d)
-			for i := range subTokens {
-				subTokens[i] = strings.TrimSuffix(subTokens[i], d)
+			if strings.Contains(tokens[i], d) {
+				subTokens := strings.Split(tokens[i], d)
+				for i := range subTokens {
+					subTokens[i] = strings.TrimSuffix(subTokens[i], d)
+				}
+				f.Set(reflect.ValueOf(subTokens))
+			} else {
+				f.Set(reflect.ValueOf([]string{tokens[i]}))
 			}
-			f.Set(reflect.ValueOf(subTokens))
 		}
 
 	}

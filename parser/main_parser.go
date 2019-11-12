@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"hl7/segments"
 	"hl7/utils"
 	"io/ioutil"
 	"strings"
@@ -22,8 +23,16 @@ func (m *mainParser) ParseFile() {
 		switch subStr {
 		case "MSH":
 			delimiter = utils.NewEncodingChars(v[4:8])
-			msh := ParseMSH(v, delimiter)
+			msh := segments.ParseMSH(v, delimiter)
 			fmt.Println(msh)
+
+		case "DG1":
+			dg1 := segments.ParseDG1(v, delimiter)
+			fmt.Println(dg1)
+
+		case "NK1":
+			nk1 := segments.ParseNK1(v, delimiter)
+			fmt.Println(nk1)
 		}
 	}
 }
