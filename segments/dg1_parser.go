@@ -50,7 +50,7 @@ func ParseDG1(line string, encodingChars *utils.EncodingChars) *DG1 {
 			f.SetString(tokens[i])
 
 		case reflect.Float32:
-			v, _ := strconv.ParseFloat(tokens[12], 32)
+			v, _ := strconv.ParseFloat(tokens[i], 32)
 			f.SetFloat(v)
 
 		case reflect.TypeOf(new(time.Time)).Kind():
@@ -60,7 +60,7 @@ func ParseDG1(line string, encodingChars *utils.EncodingChars) *DG1 {
 			field.Elem().Set(reflect.ValueOf(t))
 			reflect.ValueOf(&dg1).Elem().Field(i).Set(field)
 
-		case reflect.TypeOf(new([]string)).Kind():
+		case reflect.Slice:
 			d := encodingChars.GetDelimiters()[1]
 			if strings.Contains(tokens[i], d) {
 				subTokens := strings.Split(tokens[i], d)

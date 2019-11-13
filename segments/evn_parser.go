@@ -8,13 +8,13 @@ import (
 )
 
 type EVN struct {
-	eventTypeCode        string
-	recordedDateTime     *time.Time
-	dateTimePlannedEvent *time.Time
-	eventReasonCode      string
-	operatorID           []string //XCN
-	eventOccurred        *time.Time
-	eventFacility        string
+	EventTypeCode        string
+	RecordedDateTime     *time.Time
+	DateTimePlannedEvent *time.Time
+	EventReasonCode      string
+	OperatorID           []string //XCN
+	EventOccurred        *time.Time
+	EventFacility        string
 }
 
 func ParseEVN(line string, encodingChars *utils.EncodingChars) *EVN {
@@ -41,7 +41,7 @@ func ParseEVN(line string, encodingChars *utils.EncodingChars) *EVN {
 			field.Elem().Set(reflect.ValueOf(t))
 			reflect.ValueOf(&evn).Elem().Field(i).Set(field)
 
-		case reflect.TypeOf(new([]string)).Kind():
+		case reflect.Slice:
 			d := encodingChars.GetDelimiters()[1]
 			if strings.Contains(tokens[i], d) {
 				subTokens := strings.Split(tokens[i], d)

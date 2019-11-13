@@ -73,7 +73,7 @@ func ParseNK1(line string, encodingChars *utils.EncodingChars) *NK1 {
 			field.Elem().Set(reflect.ValueOf(t))
 			reflect.ValueOf(&nk1).Elem().Field(i).Set(field)
 
-		case reflect.TypeOf(new([]string)).Kind():
+		case reflect.Slice:
 			d := encodingChars.GetDelimiters()[1]
 			if strings.Contains(tokens[i], d) {
 				subTokens := strings.Split(tokens[i], d)

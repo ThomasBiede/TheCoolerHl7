@@ -26,6 +26,10 @@ func (m *mainParser) ParseFile() {
 			msh := segments.ParseMSH(v, delimiter)
 			fmt.Println(msh)
 
+		case "EVN":
+			evn := segments.ParseEVN(v, delimiter)
+			fmt.Print(evn)
+
 		case "DG1":
 			dg1 := segments.ParseDG1(v, delimiter)
 			fmt.Println(dg1)
@@ -33,6 +37,18 @@ func (m *mainParser) ParseFile() {
 		case "NK1":
 			nk1 := segments.ParseNK1(v, delimiter)
 			fmt.Println(nk1)
+
+		case "PD1":
+			pd1 := segments.ParsePD1(v, delimiter)
+			fmt.Println(pd1)
+
+		case "PID":
+			pid := segments.ParsePID(v, delimiter)
+			fmt.Println(pid)
+
+		case "PV1":
+			pv1 := segments.ParsePV1(v, delimiter)
+			fmt.Println(pv1)
 		}
 	}
 }
