@@ -20,10 +20,7 @@ type EVN struct {
 func ParseEVN(line string, encodingChars *utils.EncodingChars) *EVN {
 	evn := EVN{}
 
-	tokens := strings.Split(line, "|")
-	for i := range tokens {
-		tokens[i] = strings.TrimSuffix(tokens[i], "|")
-	}
+	tokens := utils.SplitAndTrim(line, "|")
 
 	o := reflect.ValueOf(&evn).Elem()
 	for i := 0; i < len(tokens); i++ {
@@ -36,7 +33,7 @@ func ParseEVN(line string, encodingChars *utils.EncodingChars) *EVN {
 
 		case reflect.TypeOf(new(time.Time)).Kind():
 			formatStr := "20060102150405"
-			t, _ := time.Parse(formatStr, tokens[i])
+			t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
 			field := reflect.New(reflect.TypeOf(t))
 			field.Elem().Set(reflect.ValueOf(t))
 			reflect.ValueOf(&evn).Elem().Field(i).Set(field)

@@ -52,10 +52,7 @@ type NK1 struct {
 func ParseNK1(line string, encodingChars *utils.EncodingChars) *NK1 {
 	nk1 := NK1{}
 
-	tokens := strings.Split(line, "|")
-	for i := range tokens {
-		tokens[i] = strings.TrimSuffix(tokens[i], "|")
-	}
+	tokens := utils.SplitAndTrim(line, "|")
 
 	o := reflect.ValueOf(&nk1).Elem()
 	for i := 0; i < len(tokens); i++ {
@@ -68,7 +65,7 @@ func ParseNK1(line string, encodingChars *utils.EncodingChars) *NK1 {
 
 		case reflect.TypeOf(new(time.Time)).Kind():
 			formatStr := "20060102150405"
-			t, _ := time.Parse(formatStr, tokens[i])
+			t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
 			field := reflect.New(reflect.TypeOf(t))
 			field.Elem().Set(reflect.ValueOf(t))
 			reflect.ValueOf(&nk1).Elem().Field(i).Set(field)

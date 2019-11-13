@@ -1,7 +1,6 @@
 package segments
 
 import (
-	"fmt"
 	"hl7/utils"
 	"reflect"
 	"strconv"
@@ -67,15 +66,9 @@ type PV1 struct {
 func ParsePV1(line string, encodingChars *utils.EncodingChars) *PV1 {
 	pv1 := PV1{}
 
-	tokens := strings.Split(line, "|")
-	for i := range tokens {
-		tokens[i] = strings.TrimSuffix(tokens[i], "|")
-	}
-	o := reflect.ValueOf(&pv1).Elem()
+	tokens := utils.SplitAndTrim(line, "|")
 
-	for i := 0; i < o.NumField(); i++ {
-		fmt.Println(o.Field(i).Type())
-	}
+	o := reflect.ValueOf(&pv1).Elem()
 
 	for i := 0; i < len(tokens); i++ {
 		f := o.Field(i)
@@ -91,7 +84,7 @@ func ParsePV1(line string, encodingChars *utils.EncodingChars) *PV1 {
 
 		case reflect.TypeOf(new(time.Time)).Kind():
 			formatStr := "20060102150405"
-			t, _ := time.Parse(formatStr, tokens[i])
+			t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
 			field := reflect.New(reflect.TypeOf(t))
 			field.Elem().Set(reflect.ValueOf(t))
 			reflect.ValueOf(&pv1).Elem().Field(i).Set(field)

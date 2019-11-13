@@ -1,0 +1,51 @@
+package datatypes
+
+import (
+	"hl7/utils"
+	"reflect"
+	"time"
+)
+
+type XPN struct {
+	FamilyName                                  string
+	GivenName                                   string
+	SecondAndFurtherGivenNamesOrInitialsThereof string
+	SuffixegJrOrIii                             string
+	PrefixegDr                                  string
+	DegreeegMd                                  string
+	NameTypeCode                                string
+	NameRepresentationCode                      string
+	NameContext                                 string
+	NameValidityRange                           string
+	NameAssemblyOrder                           string
+	EffectiveDate                               *time.Time
+	ExpirationDate                              *time.Time
+	ProfessionalSuffix                          string
+}
+
+func ParseXPN(line string, encodingChars *utils.EncodingChars) *XPN {
+	xpn := XPN{}
+
+	tokens := utils.SplitAndTrim(line, encodingChars.GetDelimiters()[0])
+
+	o := reflect.ValueOf(&xpn).Elem()
+	for i := 0; i < len(tokens); i++ {
+		f := o.Field(i)
+
+		switch f.Type().Kind() {
+
+		case reflect.String:
+			f.SetString(tokens[i])
+
+		case reflect.TypeOf(new(time.Time)).Kind():
+			formatStr := "20060102150405"
+			t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
+			field := reflect.New(reflect.TypeOf(t))
+			field.Elem().Set(reflect.ValueOf(t))
+			reflect.ValueOf(&xpn).Elem().Field(i).Set(field)
+
+		}
+	}
+
+	return &xpn
+}

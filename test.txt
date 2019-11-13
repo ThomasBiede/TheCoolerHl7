@@ -1,6 +1,6 @@
 MSH|^~\&|KIS|HNO|LIS|Blutanalyse|20181023083240||ADT^A01^ADT_A01|123456789|P|2.8.1
 EVN|20190101083000|20190101083000|?|Operator^Magda
-PID|||1234||Mustermann^Max||20010203|M|||Mössingerstraße 25^^Klagenfurt am W.^^9020||046337978||||||1234010200|1234|4711
+PID||1234||Mustermann^Max||20010203|M|||Mössingerstraße 25^^Klagenfurt am W.^^9020||046337978||||||1234010200|1234|4711
 NK1|Mustermann^Erika|MTH|Mössingerstraße 25^^Klagenfurt am Wörthersee^^9020|046337978
 NK1|Mustermann^Erik|FTH|Mössingerstraße 25^^Klagenfurt am Wörthersee^^9020|046337978
 PV1||I|||||400^Musterdoktor^Hans^^^Dr|500^Musterdoktorin^Johanna^^^DDr
