@@ -54,11 +54,14 @@ func (a *ADT_A01) ParseFile(filePath string) {
 		case "MSH":
 			delimiter = utils.NewEncodingChars(v[4:8])
 			msh := segments.ParseMSH(v, delimiter)
-			fmt.Println(msh)
+			a.messageHeader = msh
+
+		case "SFT":
+			a.softwareSegment = append(a.softwareSegment, v)
 
 		case "EVN":
 			evn := segments.ParseEVN(v, delimiter)
-			fmt.Print(evn)
+			a.eventType = evn
 
 		case "DG1":
 			dg1 := segments.ParseDG1(v, delimiter)
@@ -66,19 +69,25 @@ func (a *ADT_A01) ParseFile(filePath string) {
 
 		case "NK1":
 			nk1 := segments.ParseNK1(v, delimiter)
-			fmt.Println(nk1)
+			a.nextofKinAssociatedParties = append(a.nextofKinAssociatedParties, nk1)
 
 		case "PD1":
 			pd1 := segments.ParsePD1(v, delimiter)
-			fmt.Println(pd1)
+			a.patientAdditionalDemographic = pd1
 
 		case "PID":
 			pid := segments.ParsePID(v, delimiter)
-			fmt.Println(pid)
+			a.patientIdentification = pid
 
 		case "PV1":
 			pv1 := segments.ParsePV1(v, delimiter)
-			fmt.Println(pv1)
+			a.patientVisit = pv1
+
+		case "PV2":
+			a.patientVisitAdditionalInformation = v
+
+		case "ROL":
+			a.role = append(a.role, v)
 		}
 	}
 }
