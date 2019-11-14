@@ -9,32 +9,32 @@ import (
 )
 
 type ADT_A01 struct {
-	messageHeader                               *segments.MSH
-	softwareSegment                             []string
-	eventType                                   *segments.EVN
-	patientIdentification                       *segments.PID
-	patientAdditionalDemographic                *segments.PD1
-	role                                        []string
-	nextofKinAssociatedParties                  []*segments.NK1
-	patientVisit                                *segments.PV1
-	patientVisitAdditionalInformation           string
-	role1                                       []string
-	disability                                  []string
-	observationResult                           []string
-	patientAllergyInformation                   []string
-	diagnosis                                   []*segments.DG1
-	diagnosisRelatedGroup                       string
-	procedures                                  string
-	role2                                       []string
-	guarantor                                   []string
-	insurance                                   string
-	insuranceAdditionalInformation              string
-	insuranceAdditionalInformationCertification []string
-	role3                                       []string
-	accident                                    string
-	uB82                                        string
-	uB92Data                                    string
-	patientDeathandAutopsy                      string
+	MessageHeader                               *segments.MSH
+	SoftwareSegment                             []string
+	EventType                                   *segments.EVN
+	PatientIdentification                       *segments.PID
+	PatientAdditionalDemographic                *segments.PD1
+	Role                                        []string
+	NextofKinAssociatedParties                  []*segments.NK1
+	PatientVisit                                *segments.PV1
+	PatientVisitAdditionalInformation           string
+	Role1                                       []string
+	Disability                                  []string
+	ObservationResult                           []string
+	PatientAllergyInformation                   []string
+	Diagnosis                                   []*segments.DG1
+	DiagnosisRelatedGroup                       string
+	Procedures                                  string
+	Role2                                       []string
+	Guarantor                                   []string
+	Insurance                                   string
+	InsuranceAdditionalInformation              string
+	InsuranceAdditionalInformationCertification []string
+	Role3                                       []string
+	Accident                                    string
+	UB82                                        string
+	UB92Data                                    string
+	PatientDeathandAutopsy                      string
 }
 
 func (a *ADT_A01) ParseFile(filePath string) {
@@ -54,40 +54,76 @@ func (a *ADT_A01) ParseFile(filePath string) {
 		case "MSH":
 			delimiter = utils.NewEncodingChars(v[4:8])
 			msh := segments.ParseMSH(v, delimiter)
-			a.messageHeader = msh
+			a.MessageHeader = msh
 
 		case "SFT":
-			a.softwareSegment = append(a.softwareSegment, v)
+			a.SoftwareSegment = append(a.SoftwareSegment, v)
 
 		case "EVN":
 			evn := segments.ParseEVN(v, delimiter)
-			a.eventType = evn
+			a.EventType = evn
 
 		case "DG1":
 			dg1 := segments.ParseDG1(v, delimiter)
-			fmt.Println(dg1)
+			a.Diagnosis = append(a.Diagnosis, dg1)
 
 		case "NK1":
 			nk1 := segments.ParseNK1(v, delimiter)
-			a.nextofKinAssociatedParties = append(a.nextofKinAssociatedParties, nk1)
+			a.NextofKinAssociatedParties = append(a.NextofKinAssociatedParties, nk1)
 
 		case "PD1":
 			pd1 := segments.ParsePD1(v, delimiter)
-			a.patientAdditionalDemographic = pd1
+			a.PatientAdditionalDemographic = pd1
 
 		case "PID":
 			pid := segments.ParsePID(v, delimiter)
-			a.patientIdentification = pid
+			a.PatientIdentification = pid
 
 		case "PV1":
 			pv1 := segments.ParsePV1(v, delimiter)
-			a.patientVisit = pv1
+			a.PatientVisit = pv1
 
 		case "PV2":
-			a.patientVisitAdditionalInformation = v
+			a.PatientVisitAdditionalInformation = v
 
 		case "ROL":
-			a.role = append(a.role, v)
+			a.Role = append(a.Role, v)
+
+		case "DB1":
+			a.Disability = append(a.Disability, v)
+
+		case "OBX":
+			a.ObservationResult = append(a.ObservationResult, v)
+
+		case "AL1":
+			a.PatientAllergyInformation = append(a.PatientAllergyInformation, v)
+
+		case "DRG":
+			a.DiagnosisRelatedGroup = v
+
+		case "PR1":
+			a.Procedures = v
+
+		case "GT1":
+			a.Guarantor = append(a.Guarantor, v)
+
+		case "IN1":
+			a.Insurance = v
+
+		case "IN2":
+			a.InsuranceAdditionalInformation = v
+
+		case "IN3":
+			a.InsuranceAdditionalInformationCertification = append(a.InsuranceAdditionalInformationCertification, v)
+
+		case "ACC":
+			a.Accident = v
+
+		case "UB1":
+			a.UB92Data = v
+
+		case "PDA":
+			a.PatientDeathandAutopsy = v
 		}
 	}
 }

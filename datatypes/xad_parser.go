@@ -30,20 +30,21 @@ func ParseXAD(line string, encodingChars *utils.EncodingChars) *XAD {
 
 	o := reflect.ValueOf(&xad).Elem()
 	for i := 0; i < len(tokens); i++ {
-		f := o.Field(i)
+		if len(tokens[i]) > 0 {
+			f := o.Field(i)
 
-		switch f.Type().Kind() {
+			switch f.Type().Kind() {
 
-		case reflect.String:
-			f.SetString(tokens[i])
+			case reflect.String:
+				f.SetString(tokens[i])
 
-		case reflect.TypeOf(new(time.Time)).Kind():
-			formatStr := "20060102150405"
-			t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
-			field := reflect.New(reflect.TypeOf(t))
-			field.Elem().Set(reflect.ValueOf(t))
-			reflect.ValueOf(&xad).Elem().Field(i).Set(field)
-
+			case reflect.TypeOf(new(time.Time)).Kind():
+				formatStr := "20060102150405"
+				t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
+				field := reflect.New(reflect.TypeOf(t))
+				field.Elem().Set(reflect.ValueOf(t))
+				reflect.ValueOf(&xad).Elem().Field(i).Set(field)
+			}
 		}
 	}
 

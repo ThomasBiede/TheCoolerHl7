@@ -56,31 +56,33 @@ func ParseNK1(line string, encodingChars *utils.EncodingChars) *NK1 {
 
 	o := reflect.ValueOf(&nk1).Elem()
 	for i := 0; i < len(tokens); i++ {
-		f := o.Field(i)
+		if len(tokens[i]) > 0 {
+			f := o.Field(i)
 
-		switch f.Type().Kind() {
+			switch f.Type().Kind() {
 
-		case reflect.String:
-			f.SetString(tokens[i])
+			case reflect.String:
+				f.SetString(tokens[i])
 
-		case reflect.TypeOf(new(time.Time)).Kind():
-			formatStr := "20060102150405"
-			t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
-			field := reflect.New(reflect.TypeOf(t))
-			field.Elem().Set(reflect.ValueOf(t))
-			reflect.ValueOf(&nk1).Elem().Field(i).Set(field)
+			case reflect.TypeOf(new(time.Time)).Kind():
+				formatStr := "20060102150405"
+				t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
+				field := reflect.New(reflect.TypeOf(t))
+				field.Elem().Set(reflect.ValueOf(t))
+				reflect.ValueOf(&nk1).Elem().Field(i).Set(field)
 
-		case reflect.Slice:
-			d := encodingChars.GetDelimiters()[1]
-			if strings.Contains(tokens[i], d) {
-				subTokens := strings.Split(tokens[i], d)
-				for i := range subTokens {
-					subTokens[i] = strings.TrimSuffix(subTokens[i], d)
+			case reflect.Slice:
+				d := encodingChars.GetDelimiters()[1]
+				if strings.Contains(tokens[i], d) {
+					subTokens := strings.Split(tokens[i], d)
+					for i := range subTokens {
+						subTokens[i] = strings.TrimSuffix(subTokens[i], d)
+					}
+					f.Set(reflect.ValueOf(subTokens))
+				} else {
+					s := []string{tokens[i]}
+					f.Set(reflect.ValueOf(s))
 				}
-				f.Set(reflect.ValueOf(subTokens))
-			} else {
-				s := []string{tokens[i]}
-				f.Set(reflect.ValueOf(s))
 			}
 		}
 	}
