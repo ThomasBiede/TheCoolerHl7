@@ -1,10 +1,10 @@
 package segments
 
 import (
+	"hl7/datatypes"
 	"hl7/utils"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -13,21 +13,21 @@ type DG1 struct {
 	DiagnosisCodingMethod   string
 	DiagnosisCodeDG1        string
 	DiagnosisDescription    string
-	DiagnosisDateTime       *time.Time
+	DiagnosisDateTime       time.Time
 	DiagnosisType           string
 	MajorDiagnosticCategory string
 	DiagnosticRelatedGroup  string
 	DRGApprovalIndicator    string
 	DRGGrouperReviewCode    string
 	OutlierType             string
-	OutlierDays             float32
-	OutlierCost             float32
+	OutlierDays             float64
+	OutlierCost             float64
 	GrouperVersionAndType   string
 	DiagnosisPriority       string
-	DiagnosingClinician     []string //XCN
+	DiagnosingClinician     []datatypes.XCN //XCN
 	DiagnosisClassification string
 	ConfidentialIndicator   string
-	AttestationDateTime     *time.Time
+	AttestationDateTime     time.Time
 	DiagnosisIdentifier     string
 	DiagnosisActionCode     string
 }
@@ -42,33 +42,28 @@ func ParseDG1(line string, encodingChars *utils.EncodingChars) *DG1 {
 		if len(tokens[i]) > 0 {
 			f := o.Field(i)
 
-			switch f.Type().Kind() {
+			switch f.Type() {
 
-			case reflect.String:
+			case reflect.TypeOf(""):
 				f.SetString(tokens[i])
 
-			case reflect.Float32:
-				v, _ := strconv.ParseFloat(tokens[i], 32)
+			case reflect.TypeOf(1.0):
+				v, _ := strconv.ParseFloat(tokens[i], 64)
 				f.SetFloat(v)
 
-			case reflect.TypeOf(new(time.Time)).Kind():
+			case reflect.TypeOf(time.Time{}):
 				formatStr := "20060102150405"
 				t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
-				field := reflect.New(reflect.TypeOf(t))
-				field.Elem().Set(reflect.ValueOf(t))
-				reflect.ValueOf(&dg1).Elem().Field(i).Set(field)
+				f.Set(reflect.ValueOf(t))
 
-			case reflect.Slice:
-				d := encodingChars.GetDelimiters()[1]
-				if strings.Contains(tokens[i], d) {
-					subTokens := strings.Split(tokens[i], d)
-					for i := range subTokens {
-						subTokens[i] = strings.TrimSuffix(subTokens[i], d)
-					}
-					f.Set(reflect.ValueOf(subTokens))
-				} else {
-					f.Set(reflect.ValueOf([]string{tokens[i]}))
+			case reflect.TypeOf([]*datatypes.XCN{}):
+				var xcns []*datatypes.XCN
+				stokens := utils.SplitAndTrim(tokens[i], encodingChars.GetDelimiters()[1])
+				for j := 0; j < len(stokens); j++ {
+					xcns = append(xcns, datatypes.ParseXCN(stokens[j], encodingChars))
 				}
+
+				f.Set(reflect.ValueOf(xcns))
 			}
 		}
 	}

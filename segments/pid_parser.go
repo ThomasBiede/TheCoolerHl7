@@ -1,6 +1,7 @@
 package segments
 
 import (
+	"hl7/datatypes"
 	"hl7/utils"
 	"reflect"
 	"strconv"
@@ -13,16 +14,16 @@ type PID struct {
 	PatientID                   string
 	PatientIdentifierList       []string
 	AlternatePatientIDPID       []string
-	PatientName                 []string // XPN
-	MothersMaidenName           []string // XPN
-	DateTimeofBirth             *time.Time
+	PatientName                 []*datatypes.XPN // XPN
+	MothersMaidenName           []*datatypes.XPN // XPN
+	DateTimeofBirth             time.Time
 	AdministrativeSex           string
-	PatientAlias                []string //XPN
+	PatientAlias                []*datatypes.XPN //XPN
 	Race                        []string
-	PatientAddress              []string // XAD
+	PatientAddress              []*datatypes.XAD // XAD
 	CountyCode                  string
-	PhoneNumberHome             []string //XTN
-	PhoneNumberBusiness         []string //XTN
+	PhoneNumberHome             []*datatypes.XTN //XTN
+	PhoneNumberBusiness         []*datatypes.XTN //XTN
 	PrimaryLanguage             string
 	MaritalStatus               string
 	Religion                    string
@@ -33,15 +34,15 @@ type PID struct {
 	EthnicGroup                 []string
 	BirthPlace                  string
 	MultipleBirthIndicator      string
-	BirthOrder                  float32
+	BirthOrder                  float64
 	Citizenship                 []string
 	VeteransMilitaryStatus      string
 	Nationality                 string
-	PatientDeathDateandTime     *time.Time
+	PatientDeathDateandTime     time.Time
 	PatientDeathIndicator       string
 	IdentityUnknownIndicator    string
 	IdentityReliabilityCode     []string
-	LastUpdateDateTime          *time.Time
+	LastUpdateDateTime          time.Time
 	LastUpdateFacility          string
 	SpeciesCode                 string
 	BreedCode                   string
@@ -60,27 +61,25 @@ func ParsePID(line string, encodingChars *utils.EncodingChars) *PID {
 		if len(tokens[i]) > 0 {
 			f := o.Field(i)
 
-			switch f.Type().Kind() {
+			switch f.Type() {
 
-			case reflect.String:
+			case reflect.TypeOf(""):
 				f.SetString(tokens[i])
 
-			case reflect.Int64:
+			case reflect.TypeOf(1):
 				v, _ := strconv.ParseInt(tokens[i], 10, 64)
 				f.SetInt(v)
 
-			case reflect.Float32:
+			case reflect.TypeOf(1.0):
 				v, _ := strconv.ParseFloat(tokens[i], 32)
 				f.SetFloat(v)
 
-			case reflect.TypeOf(new(time.Time)).Kind():
+			case reflect.TypeOf(time.Time{}):
 				formatStr := "20060102150405"
 				t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
-				field := reflect.New(reflect.TypeOf(t))
-				field.Elem().Set(reflect.ValueOf(t))
-				reflect.ValueOf(&pid).Elem().Field(i).Set(field)
+				f.Set(reflect.ValueOf(t))
 
-			case reflect.Slice:
+			case reflect.TypeOf([]string{}):
 				d := encodingChars.GetDelimiters()[1]
 				if strings.Contains(tokens[i], d) {
 					subTokens := strings.Split(tokens[i], d)
@@ -91,6 +90,33 @@ func ParsePID(line string, encodingChars *utils.EncodingChars) *PID {
 				} else {
 					f.Set(reflect.ValueOf([]string{tokens[i]}))
 				}
+
+			case reflect.TypeOf([]*datatypes.XPN{}):
+				var xpns []*datatypes.XPN
+				stokens := utils.SplitAndTrim(tokens[i], encodingChars.GetDelimiters()[1])
+				for j := 0; j < len(stokens); j++ {
+					xpns = append(xpns, datatypes.ParseXPN(stokens[j], encodingChars))
+				}
+
+				f.Set(reflect.ValueOf(xpns))
+
+			case reflect.TypeOf([]*datatypes.XAD{}):
+				var xads []*datatypes.XAD
+				stokens := utils.SplitAndTrim(tokens[i], encodingChars.GetDelimiters()[1])
+				for j := 0; j < len(stokens); j++ {
+					xads = append(xads, datatypes.ParseXAD(stokens[j], encodingChars))
+				}
+
+				f.Set(reflect.ValueOf(xads))
+
+			case reflect.TypeOf([]*datatypes.XTN{}):
+				var xtns []*datatypes.XTN
+				stokens := utils.SplitAndTrim(tokens[i], encodingChars.GetDelimiters()[1])
+				for j := 0; j < len(stokens); j++ {
+					xtns = append(xtns, datatypes.ParseXTN(stokens[j], encodingChars))
+				}
+
+				f.Set(reflect.ValueOf(xtns))
 			}
 		}
 	}

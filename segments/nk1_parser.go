@@ -1,6 +1,7 @@
 package segments
 
 import (
+	"hl7/datatypes"
 	"hl7/utils"
 	"reflect"
 	"strings"
@@ -9,21 +10,21 @@ import (
 
 type NK1 struct {
 	SetIDNK1                                 string
-	NkName                                   []string //XPN
+	NkName                                   []*datatypes.XPN //XPN
 	Relationship                             string
-	Address                                  []string //XAD
-	PhoneNumber                              []string //XTN
-	BusinessPhoneNumber                      []string //XTN
+	Address                                  []*datatypes.XAD //XAD
+	PhoneNumber                              []*datatypes.XTN //XTN
+	BusinessPhoneNumber                      []*datatypes.XTN //XTN
 	ContactRole                              string
-	StartDate                                *time.Time
-	EndDate                                  *time.Time
+	StartDate                                time.Time
+	EndDate                                  time.Time
 	NextofKinAssociatedPartiesJobTitle       string
 	NextofKinAssociatedPartiesJobCodeClass   string
 	NextofKinAssociatedPartiesEmployeeNumber string
 	OrganizationNameNK1                      []string
 	MaritalStatus                            string
 	AdministrativeSex                        string
-	DateTimeofBirth                          *time.Time
+	DateTimeofBirth                          time.Time
 	LivingDependency                         []string
 	AmbulatoryStatus                         []string
 	Citizenship                              []string
@@ -33,13 +34,13 @@ type NK1 struct {
 	ProtectionIndicator                      string
 	StudentIndicator                         string
 	Religion                                 string
-	MothersMaidenName                        []string //XPN
+	MothersMaidenName                        []*datatypes.XPN //XPN
 	Nationality                              string
 	EthnicGroup                              []string
 	ContactReason                            []string
-	ContactPersonsName                       []string //XPN
-	ContactPersonsTelephoneNumber            []string //XTN
-	ContactPersonsAddress                    []string //XAD
+	ContactPersonsName                       []*datatypes.XPN //XPN
+	ContactPersonsTelephoneNumber            []*datatypes.XTN //XTN
+	ContactPersonsAddress                    []*datatypes.XAD //XAD
 	NextofKinAssociatedPartysIdentifiers     []string
 	JobStatus                                string
 	Race                                     []string
@@ -59,19 +60,17 @@ func ParseNK1(line string, encodingChars *utils.EncodingChars) *NK1 {
 		if len(tokens[i]) > 0 {
 			f := o.Field(i)
 
-			switch f.Type().Kind() {
+			switch f.Type() {
 
-			case reflect.String:
+			case reflect.TypeOf(""):
 				f.SetString(tokens[i])
 
-			case reflect.TypeOf(new(time.Time)).Kind():
+			case reflect.TypeOf(time.Time{}):
 				formatStr := "20060102150405"
 				t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
-				field := reflect.New(reflect.TypeOf(t))
-				field.Elem().Set(reflect.ValueOf(t))
-				reflect.ValueOf(&nk1).Elem().Field(i).Set(field)
+				f.Set(reflect.ValueOf(t))
 
-			case reflect.Slice:
+			case reflect.TypeOf([]string{}):
 				d := encodingChars.GetDelimiters()[1]
 				if strings.Contains(tokens[i], d) {
 					subTokens := strings.Split(tokens[i], d)
@@ -83,6 +82,33 @@ func ParseNK1(line string, encodingChars *utils.EncodingChars) *NK1 {
 					s := []string{tokens[i]}
 					f.Set(reflect.ValueOf(s))
 				}
+
+			case reflect.TypeOf([]*datatypes.XPN{}):
+				var xpns []*datatypes.XPN
+				stokens := utils.SplitAndTrim(tokens[i], encodingChars.GetDelimiters()[1])
+				for j := 0; j < len(stokens); j++ {
+					xpns = append(xpns, datatypes.ParseXPN(stokens[j], encodingChars))
+				}
+
+				f.Set(reflect.ValueOf(xpns))
+
+			case reflect.TypeOf([]*datatypes.XAD{}):
+				var xads []*datatypes.XAD
+				stokens := utils.SplitAndTrim(tokens[i], encodingChars.GetDelimiters()[1])
+				for j := 0; j < len(stokens); j++ {
+					xads = append(xads, datatypes.ParseXAD(stokens[j], encodingChars))
+				}
+
+				f.Set(reflect.ValueOf(xads))
+
+			case reflect.TypeOf([]*datatypes.XTN{}):
+				var xtns []*datatypes.XTN
+				stokens := utils.SplitAndTrim(tokens[i], encodingChars.GetDelimiters()[1])
+				for j := 0; j < len(stokens); j++ {
+					xtns = append(xtns, datatypes.ParseXTN(stokens[j], encodingChars))
+				}
+
+				f.Set(reflect.ValueOf(xtns))
 			}
 		}
 	}

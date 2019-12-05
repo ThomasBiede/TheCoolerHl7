@@ -19,8 +19,8 @@ type XAD struct {
 	CensusTract                string
 	AddressRepresentationCode  string
 	AddressValidityRange       string
-	EffectiveDate              *time.Time
-	ExpirationDate             *time.Time
+	EffectiveDate              time.Time
+	ExpirationDate             time.Time
 }
 
 func ParseXAD(line string, encodingChars *utils.EncodingChars) *XAD {
@@ -33,17 +33,15 @@ func ParseXAD(line string, encodingChars *utils.EncodingChars) *XAD {
 		if len(tokens[i]) > 0 {
 			f := o.Field(i)
 
-			switch f.Type().Kind() {
+			switch f.Type() {
 
-			case reflect.String:
+			case reflect.TypeOf(""):
 				f.SetString(tokens[i])
 
-			case reflect.TypeOf(new(time.Time)).Kind():
+			case reflect.TypeOf(time.Time{}):
 				formatStr := "20060102150405"
 				t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
-				field := reflect.New(reflect.TypeOf(t))
-				field.Elem().Set(reflect.ValueOf(t))
-				reflect.ValueOf(&xad).Elem().Field(i).Set(field)
+				f.Set(reflect.ValueOf(t))
 			}
 		}
 	}

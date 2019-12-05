@@ -8,7 +8,7 @@ import (
 
 func main() {
 	p := &parser.ADT_A01{}
-	p.ParseFile("test.txt")
+	p.ParseFile("A01d.txt")
 
 	out, err := xml.Marshal(p)
 	if err != nil {

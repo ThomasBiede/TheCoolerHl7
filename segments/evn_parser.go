@@ -1,19 +1,19 @@
 package segments
 
 import (
+	"hl7/datatypes"
 	"hl7/utils"
 	"reflect"
-	"strings"
 	"time"
 )
 
 type EVN struct {
 	EventTypeCode        string
-	RecordedDateTime     *time.Time
-	DateTimePlannedEvent *time.Time
+	RecordedDateTime     time.Time
+	DateTimePlannedEvent time.Time
 	EventReasonCode      string
-	OperatorID           []string //XCN
-	EventOccurred        *time.Time
+	OperatorID           []*datatypes.XCN //XCN
+	EventOccurred        time.Time
 	EventFacility        string
 }
 
@@ -27,29 +27,24 @@ func ParseEVN(line string, encodingChars *utils.EncodingChars) *EVN {
 		if len(tokens[i]) > 0 {
 			f := o.Field(i)
 
-			switch f.Type().Kind() {
+			switch f.Type() {
 
-			case reflect.String:
+			case reflect.TypeOf(""):
 				f.SetString(tokens[i])
 
-			case reflect.TypeOf(new(time.Time)).Kind():
+			case reflect.TypeOf(time.Time{}):
 				formatStr := "20060102150405"
 				t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
-				field := reflect.New(reflect.TypeOf(t))
-				field.Elem().Set(reflect.ValueOf(t))
-				reflect.ValueOf(&evn).Elem().Field(i).Set(field)
+				f.Set(reflect.ValueOf(t))
 
-			case reflect.Slice:
-				d := encodingChars.GetDelimiters()[1]
-				if strings.Contains(tokens[i], d) {
-					subTokens := strings.Split(tokens[i], d)
-					for i := range subTokens {
-						subTokens[i] = strings.TrimSuffix(subTokens[i], d)
-					}
-					f.Set(reflect.ValueOf(subTokens))
-				} else {
-					f.Set(reflect.ValueOf([]string{tokens[i]}))
+			case reflect.TypeOf([]*datatypes.XCN{}):
+				var xcns []*datatypes.XCN
+				stokens := utils.SplitAndTrim(tokens[i], encodingChars.GetDelimiters()[1])
+				for j := 0; j < len(stokens); j++ {
+					xcns = append(xcns, datatypes.ParseXCN(stokens[j], encodingChars))
 				}
+
+				f.Set(reflect.ValueOf(xcns))
 			}
 		}
 	}

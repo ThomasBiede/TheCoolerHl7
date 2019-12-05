@@ -44,15 +44,15 @@ func (a *ADT_A01) ParseFile(filePath string) {
 	}
 
 	lines := strings.SplitAfter(string(data), "\n")
-
 	var delimiter *utils.EncodingChars
 
-	for _, v := range lines {
-		subStr := v[:3]
+	for _, w := range lines {
+		subStr := w[:3]
+		v := w[4:]
 
 		switch subStr {
 		case "MSH":
-			delimiter = utils.NewEncodingChars(v[4:8])
+			delimiter = utils.NewEncodingChars(w[4:8])
 			msh := segments.ParseMSH(v, delimiter)
 			a.MessageHeader = msh
 

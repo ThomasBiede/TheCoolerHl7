@@ -15,7 +15,7 @@ type MSH struct {
 	SendingFacility                     string
 	ReceivingApplication                string
 	ReceivingFacility                   string
-	DateTimeOfMessage                   *time.Time
+	DateTimeOfMessage                   time.Time
 	Security                            string
 	MessageType                         string
 	MessageControlID                    string
@@ -36,29 +36,28 @@ func ParseMSH(line string, encodingChars *utils.EncodingChars) *MSH {
 	msh := MSH{}
 
 	tokens := utils.SplitAndTrim(line, "|")
+	tokens = append([]string{"|"}, tokens...)
 
 	o := reflect.ValueOf(&msh).Elem()
 	for i := 0; i < len(tokens); i++ {
 		if len(tokens[i]) > 0 {
 			f := o.Field(i)
 
-			switch f.Type().Kind() {
+			switch f.Type() {
 
-			case reflect.String:
+			case reflect.TypeOf(""):
 				f.SetString(tokens[i])
 
-			case reflect.Int64:
+			case reflect.TypeOf(1):
 				v, _ := strconv.ParseInt(tokens[i], 10, 64)
 				f.SetInt(v)
 
-			case reflect.TypeOf(new(time.Time)).Kind():
+			case reflect.TypeOf(time.Time{}):
 				formatStr := "20060102150405"
 				t, _ := time.Parse(formatStr[0:len(tokens[i])], tokens[i])
-				field := reflect.New(reflect.TypeOf(t))
-				field.Elem().Set(reflect.ValueOf(t))
-				reflect.ValueOf(&msh).Elem().Field(i).Set(field)
+				f.Set(reflect.ValueOf(t))
 
-			case reflect.Slice:
+			case reflect.TypeOf([]string{}):
 				d := encodingChars.GetDelimiters()[1]
 				if strings.Contains(tokens[i], d) {
 					subTokens := strings.Split(tokens[i], d)
